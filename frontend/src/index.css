@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paleta profesional basada en los colores de marca */
+  /* Primary: Tonos de verde corporativo #3f594d */
+  --color-primary-50: #f6f8f7;
+  --color-primary-100: #e8ece9;
+  --color-primary-200: #d1d9d4;
+  --color-primary-300: #a9b8af;
+  --color-primary-400: #7d9488;
+  --color-primary-500: #5a7169;
+  --color-primary-600: #3f594d;
+  --color-primary-700: #35493f;
+  --color-primary-800: #2d3d35;
+  --color-primary-900: #26342c;
+
+  /* Secondary: Tonos neutros cálidos basados en #fbf5e8 */
+  --color-secondary-50: #fbf5e8;
+  --color-secondary-100: #f7edd5;
+  --color-secondary-200: #efe0b8;
+  --color-secondary-300: #e3cc91;
+  --color-secondary-400: #d4b36e;
+  --color-secondary-500: #c49a52;
+  --color-secondary-600: #a87d42;
+  --color-secondary-700: #8a6438;
+  --color-secondary-800: #715232;
+  --color-secondary-900: #5e442a;
+}
