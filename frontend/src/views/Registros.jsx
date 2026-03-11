@@ -4,6 +4,7 @@ import { residentesService } from '../services/residentesService';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import { isUnauthorized } from '../services/apiClient';
 
 const Registros = () => {
   const [residentes, setResidentes] = useState([]);
@@ -69,7 +70,7 @@ const Registros = () => {
         setTotalRegistros((paginaActual + 1) * registrosPorPagina + 1);
       }
     } catch (error) {
-      toast.error('Error al cargar los registros');
+        if (!isUnauthorized(error)) toast.error('Error al cargar los registros');
     } finally {
       setLoading(false);
     }
@@ -140,7 +141,7 @@ const Registros = () => {
       setPaginaActual(0);
       loadRegistros();
     } catch (error) {
-      toast.error('Error al guardar el registro');
+      if (!isUnauthorized(error)) toast.error('Error al guardar el registro');
     } finally {
       setLoading(false);
     }

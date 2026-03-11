@@ -3,6 +3,7 @@ import { medicacionService } from '../services/medicacionService';
 import { residentesService } from '../services/residentesService';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import { isUnauthorized } from '../services/apiClient';
 
 const Medicacion = () => {
   const [residentes, setResidentes] = useState([]);
@@ -51,7 +52,7 @@ const Medicacion = () => {
       const data = await medicacionService.getByResidente(residenteSeleccionado.dni);
       setMedicaciones(data);
     } catch (error) {
-      toast.error('Error al cargar la medicación');
+      if (!isUnauthorized(error)) toast.error('Error al cargar la medicación');
     } finally {
       setLoading(false);
     }
@@ -123,8 +124,10 @@ const Medicacion = () => {
       await loadMedicacion();
       handleCancelForm();
     } catch (error) {
-      toast.error('Error al guardar la medicación');
-      setFormErrors({ submit: 'Error al guardar la medicación' });
+      if (!isUnauthorized(error)) {
+        toast.error('Error al guardar la medicación');
+        setFormErrors({ submit: 'Error al guardar la medicación' });
+      }
     } finally {
       setLoading(false);
     }

@@ -15,6 +15,9 @@ export const setUnauthorizedHandler = (handler) => {
   unauthorizedHandler = handler;
 };
 
+export const isUnauthorized = (error) =>
+  error instanceof ApiError && error.status === 401;
+
 const parseResponseBody = async (response) => {
   const contentType = response.headers.get('content-type') || '';
 

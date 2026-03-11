@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { residentesService } from '../services/residentesService';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import { isUnauthorized } from '../services/apiClient';
 
 const Residentes = ({ onSelectResidente }) => {
   const [residentes, setResidentes] = useState([]);
@@ -39,7 +40,7 @@ const Residentes = ({ onSelectResidente }) => {
       const data = await residentesService.getAll();
       setResidentes(data);
     } catch (error) {
-      toast.error('Error al cargar residentes');
+      if (!isUnauthorized(error)) toast.error('Error al cargar residentes');
     } finally {
       setLoading(false);
     }
@@ -174,8 +175,10 @@ const Residentes = ({ onSelectResidente }) => {
       });
       
     } catch (error) {
-      toast.error('Error al registrar el residente. Intente nuevamente.');
-      setFormErrors({ submit: 'Error al registrar el residente. Intente nuevamente.' });
+        if (!isUnauthorized(error)) {
+          toast.error('Error al registrar el residente. Intente nuevamente.');
+          setFormErrors({ submit: 'Error al registrar el residente. Intente nuevamente.' });
+        }
     } finally {
       setSubmitting(false);
     }
