@@ -1,24 +1,15 @@
-// Servicio de autenticación conectado con backend real
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+import { apiRequest, ApiError } from './apiClient';
 
 export const authService = {
   login: async (email, password) => {
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      return await apiRequest('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email, password })
+      }, {
+        skipAuthHandling: true
       });
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Credenciales inválidas' }));
-        throw new Error(error.message || 'Credenciales inválidas');
-      }
-
-      const data = await response.json();
-      return data;
     } catch (error) {
       if (error.message === 'Failed to fetch') {
         throw new Error('No se pudo conectar con el servidor');
@@ -29,46 +20,35 @@ export const authService = {
 
   // Registrar nuevo usuario
   register: async (userData) => {
-
-    const response = await fetch(`${API_URL}/auth/register`, {
+    await apiRequest('/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify(userData)
+    }, {
+      skipAuthHandling: true
     });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al registrar usuario');
-    }
-    
   },
 
   // Verificar sesión activa - La cookie se envía automáticamente
   verifySession: async () => {
-    // TODO: Implementar verificación real
-    // const response = await fetch(`${API_URL}/auth/verify`, {
-    //   credentials: 'include' // La cookie se envía automáticamente
-    // });
-    // if (!response.ok) return null;
-    // return await response.json(); // Retorna datos del usuario si la sesión es válida
-    
-    return true;
+    try {
+      return await apiRequest('/auth/verify', {}, { skipAuthHandling: true });
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        return null;
+      }
+      throw error;
+    }
   },
 
   // Cerrar sesión - Elimina la cookie del servidor
   logout: async () => {
     try {
-      const response = await fetch(`${API_URL}/auth/logout`, {
+      await apiRequest('/auth/logout', {
         method: 'POST',
-        credentials: 'include' // Envía la cookie para identificar la sesión
+      }, {
+        skipAuthHandling: true
       });
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Error al cerrar sesión' }));
-        throw new Error(error.message || 'Error al cerrar sesión');
-      }
-
-      return await response.json();
     } catch (error) {
       if (error.message === 'Failed to fetch') {
         throw new Error('No se pudo conectar con el servidor');

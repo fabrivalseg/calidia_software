@@ -38,7 +38,7 @@ const Inicio = () => {
           ¡Bienvenido/a, {user?.nombre}!
         </h1>
         <p className="text-secondary-50/90 text-lg">
-          Sistema de Gestión de Enfermería - Geriátrico Calidia
+          Sistema de Gestión de Enfermería - Calidia Residencia Senior
         </p>
         <p className="text-secondary-50/80 mt-4">
           {new Date().toLocaleDateString('es-AR', { 

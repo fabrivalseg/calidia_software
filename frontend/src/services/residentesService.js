@@ -1,22 +1,14 @@
 // Servicio para gestión de residentes
 // Preparado para conectar con backend real
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+import { apiRequest } from './apiClient';
 
 
 export const residentesService = {
 
   getAll: async () => {
-  const respuesta = await fetch(`${API_URL}/residentes`, {
-    credentials: "include" 
-  });
-
-  if (!respuesta.ok) {
-    throw new Error("No autorizado o error al obtener residentes");
-  }
-
-  return await respuesta.json();
-},
+    return await apiRequest('/residentes');
+  },
 
 
   // Buscar residentes
@@ -33,13 +25,10 @@ export const residentesService = {
 
   // Crear residente
   create: async (data) => {
-    const response = await fetch(`${API_URL}/residentes`, {
+    return await apiRequest('/residentes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify(data)
     });
-    return await response.json();
-
   }
 };

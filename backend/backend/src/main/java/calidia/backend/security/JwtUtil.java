@@ -26,7 +26,7 @@ public class JwtUtil {
                 .claim("rol", usuario.getRol())
                 .setIssuedAt(new Date())
                 .setExpiration(
-                        new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 8)
+                        new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 8)
                 ) // 8 horas
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
@@ -58,5 +58,3 @@ public class JwtUtil {
         return expiracion.before(new Date());
     }
 }
-
-

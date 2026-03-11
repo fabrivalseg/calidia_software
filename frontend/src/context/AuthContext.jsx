@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { authService } from '../services/authService';
+import { setUnauthorizedHandler } from '../services/apiClient';
 import { toast } from 'react-toastify';
 
 const AuthContext = createContext(null);
@@ -15,21 +16,40 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const expirationToastShownRef = useRef(false);
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setUser(null);
+      localStorage.removeItem('user');
+      if (!expirationToastShownRef.current) {
+        expirationToastShownRef.current = true;
+        toast.warning('Tu sesion expiro. Por favor volve a iniciar sesion.');
+      }
+    });
+
+    return () => {
+      setUnauthorizedHandler(null);
+    };
+  }, []);
 
   useEffect(() => {
     // Verificar si hay una sesión activa (cookie válida)
     const checkSession = async () => {
       try {
-        // TODO: Cuando el backend esté listo, descomentar:
-        // const userData = await authService.verifySession();
-        // if (userData) {
-        //   setUser(userData);
-        // }
-        
-        // Por ahora, verificar localStorage para desarrollo
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+        const userData = await authService.verifySession();
+        if (userData) {
+          expirationToastShownRef.current = false;
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+        } else {
+          // Si había una sesión previa guardada, significa que expiró
+          const hadSession = localStorage.getItem('user');
+          localStorage.removeItem('user');
+          if (hadSession) {
+            expirationToastShownRef.current = true;
+            toast.warning('Tu sesion expiro. Por favor volve a iniciar sesion.');
+          }
         }
       } catch (error) {
         console.error('Error verificando sesión:', error);
@@ -43,6 +63,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const userData = await authService.login(email, password);
+      expirationToastShownRef.current = false;
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       toast.success(`Bienvenido`);
@@ -56,7 +77,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authService.logout();
-      toast.info('Sesión cerrada exitosamente');
+      toast.info('Sesion cerrada exitosamente');
     } catch (error) {
       toast.error('Error al cerrar sesión');
     } finally {

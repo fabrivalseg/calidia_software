@@ -3,16 +3,19 @@ package calidia.backend.controlador;
 import calidia.backend.dto.CrearUsuarioDTO;
 import calidia.backend.dto.LoginRequestDTO;
 import calidia.backend.dto.LoginResponseDTO;
+import calidia.backend.modelo.Usuario;
 import calidia.backend.servicio.AuthServicio;
 import calidia.backend.servicio.UsuarioServicio;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -64,6 +67,23 @@ public class AuthControlador {
         response.addCookie(cookie);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifySession(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String email = authentication.getName();
+        Usuario usuario = usuarioServicio.buscarPorEmail(email);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("email", usuario.getEmail());
+        response.put("nombre", usuario.getNombre());
+        response.put("rol", usuario.getRol());
+
+        return ResponseEntity.ok(response);
     }
 
 

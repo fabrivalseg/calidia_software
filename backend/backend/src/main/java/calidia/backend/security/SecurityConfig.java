@@ -20,9 +20,12 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter,
+                          JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
         this.jwtFilter = jwtFilter;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
 
 
@@ -35,9 +38,12 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
+                .exceptionHandling(exception ->
+                    exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                )
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/register").permitAll()
                     .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
             )
