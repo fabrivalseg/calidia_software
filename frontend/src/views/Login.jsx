@@ -115,7 +115,7 @@ const Login = () => {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-1">Geriátrico Calidia</h1>
+            <h1 className="text-2xl font-bold mb-1">Residencia Senior Calidia</h1>
             <p className="text-secondary-50/90 text-sm">Sistema de Gestión Institucional</p>
           </div>
 
