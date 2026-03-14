@@ -18,6 +18,40 @@ export const setUnauthorizedHandler = (handler) => {
 export const isUnauthorized = (error) =>
   error instanceof ApiError && error.status === 401;
 
+export const getErrorMessage = (error, fallback = 'Ocurrio un error inesperado') => {
+  if (!error) {
+    return fallback;
+  }
+
+  if (error instanceof ApiError) {
+    if (error.data?.message) {
+      return error.data.message;
+    }
+
+    if (error.message) {
+      return error.message;
+    }
+
+    if (error.status === 401) {
+      return 'Sesion expirada o no autorizada';
+    }
+
+    if (error.status === 403) {
+      return 'No tenes permisos para realizar esta accion';
+    }
+  }
+
+  if (error.message === 'Failed to fetch') {
+    return 'No se pudo conectar con el servidor';
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+};
+
 const parseResponseBody = async (response) => {
   const contentType = response.headers.get('content-type') || '';
 
@@ -31,10 +65,15 @@ const parseResponseBody = async (response) => {
 export const apiRequest = async (endpoint, options = {}, config = {}) => {
   const { skipAuthHandling = false } = config;
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    credentials: 'include',
-    ...options,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, {
+      credentials: 'include',
+      ...options,
+    });
+  } catch (error) {
+    throw new ApiError(getErrorMessage(error, 'No se pudo conectar con el servidor'), 0, null);
+  }
 
   const data = await parseResponseBody(response);
 
@@ -43,7 +82,7 @@ export const apiRequest = async (endpoint, options = {}, config = {}) => {
   }
 
   if (!response.ok) {
-    const message = data?.message || 'Error en la solicitud';
+    const message = data?.message || `La solicitud fallo con codigo ${response.status}`;
     throw new ApiError(message, response.status, data);
   }
 

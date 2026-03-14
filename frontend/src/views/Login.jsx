@@ -50,7 +50,14 @@ const Login = () => {
 
     setLoading(true);
 
-    const rolUpper = rol.toUpperCase();     
+    const roleMap = {
+      enfermero: 'ENFERMERO',
+      medico: 'MEDICO',
+      administrativo: 'ADMIN',
+      director: 'ADMIN'
+    };
+    const rolApi = roleMap[rol] || 'ENFERMERO';
+
     try {
       await authService.register({
         email,
@@ -58,7 +65,7 @@ const Login = () => {
         nombre,
         apellido,
         telefono,
-        rol: rolUpper
+        rol: rolApi
       });
       
       toast.success('Usuario registrado exitosamente. Ya puedes iniciar sesión.');

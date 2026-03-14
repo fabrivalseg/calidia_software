@@ -4,6 +4,7 @@ import calidia.backend.dto.ResidenteDTO;
 import calidia.backend.dto.mappers.ResidenteMapper;
 import calidia.backend.dto.response.ResidenteResponseDTO;
 import calidia.backend.servicio.ResidenteServicio;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ public class ResidenteControlador {
     }
 
     @PostMapping
-    public ResponseEntity<ResidenteResponseDTO> crear(@RequestBody ResidenteDTO dto) {
+    public ResponseEntity<ResidenteResponseDTO> crear(@Valid @RequestBody ResidenteDTO dto) {
         return ResponseEntity.ok(
                 ResidenteMapper.toDTO(
                         residenteServicio.crearResidente(dto)

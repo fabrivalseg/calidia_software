@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { authService } from '../services/authService';
-import { setUnauthorizedHandler } from '../services/apiClient';
+import { getErrorMessage, setUnauthorizedHandler } from '../services/apiClient';
 import { toast } from 'react-toastify';
 
 const AuthContext = createContext(null);
@@ -69,8 +69,9 @@ export const AuthProvider = ({ children }) => {
       toast.success(`Bienvenido`);
       return { success: true };
     } catch (error) {
-      toast.error('Error al iniciar sesión. Verifica tus credenciales.');
-      return { success: false, error: error.message };
+      const message = getErrorMessage(error, 'No se pudo iniciar sesion');
+      toast.error(message);
+      return { success: false, error: message };
     }
   };
 
@@ -79,7 +80,7 @@ export const AuthProvider = ({ children }) => {
       await authService.logout();
       toast.info('Sesion cerrada exitosamente');
     } catch (error) {
-      toast.error('Error al cerrar sesión');
+      toast.error(getErrorMessage(error, 'No se pudo cerrar sesion'));
     } finally {
       setUser(null);
       localStorage.removeItem('user');

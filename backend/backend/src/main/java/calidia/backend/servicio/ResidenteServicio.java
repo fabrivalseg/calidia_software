@@ -7,7 +7,9 @@ import calidia.backend.modelo.Familiar;
 import calidia.backend.modelo.Residente;
 import calidia.backend.repositorio.FamiliarRepositorio;
 import calidia.backend.repositorio.ResidenteRepositorio;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,6 +25,7 @@ public class ResidenteServicio {
         this.familiarRepositorio = familiarRepositorio;
     }
 
+    @Transactional
     public Residente crearResidente(ResidenteDTO dto) {
         if (residenteRepositorio.existsByDni(dto.getDni())) {
             throw new BadRequestException("Ya existe un residente con ese DNI");
@@ -47,7 +50,11 @@ public class ResidenteServicio {
         residente.setMedicacion(dto.getMedicacion());
         residente.setFamiliar(familiar);
 
-        return residenteRepositorio.save(residente);
+        try {
+            return residenteRepositorio.save(residente);
+        } catch (DataIntegrityViolationException ex) {
+            throw new BadRequestException("Ya existe un residente con ese DNI");
+        }
     }
 
     public List<Residente> listarTodos() {

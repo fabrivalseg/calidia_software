@@ -18,14 +18,14 @@ public class EvolucionDTO {
     private String signosVitales;
 
     @NotBlank(message = "El detalle de la evolución es obligatorio")
-    @Size(min = 10, max = 2000, message = "La evolución debe tener al menos 10 caracteres y máximo 2000")
+    @Size(max = 2000, message = "La evolución no debe superar los 2000 caracteres")
     private String evolucion;
 
     @Size(max = 1000, message = "Las notas no pueden superar los 1000 caracteres")
     private String notas;
 
     @NotBlank(message = "El turno es obligatorio")
-    @Pattern(regexp = "^(Mañana|Tarde|Noche)$", message = "El turno debe ser Mañana, Tarde o Noche")
+    @Pattern(regexp = "^(?i)(Mañana|Manana|Tarde|Noche)$", message = "El turno debe ser Manana, Tarde o Noche")
     private String turno;
 
     @NotBlank(message = "El DNI del residente es obligatorio")

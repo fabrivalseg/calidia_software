@@ -42,9 +42,12 @@ public class ResidenteDTO {
     @Size(min = 2, max = 50)
     private String apellidoFamiliar;
 
-    @Size(max = 100, message = "El parentesco de patologías es demasiado extenso")
+    @NotBlank(message = "El parentesco es obligatorio")
+    @Size(max = 100, message = "El parentesco es demasiado extenso")
     private String parentescoFamiliar;
 
+    @NotBlank(message = "El telefono del familiar es obligatorio")
+    @Pattern(regexp = "^\\+?[0-9\\s\\-]{7,20}$", message = "El telefono del familiar debe tener un formato valido")
     private String telefonoFamiliar;
 
     public String getDni() {
@@ -127,19 +130,19 @@ public class ResidenteDTO {
         this.apellidoFamiliar = apellidoFamiliar;
     }
 
-    public @Size(max = 100, message = "El parentesco de patologías es demasiado extenso") String getParentescoFamiliar() {
+    public @NotBlank(message = "El parentesco es obligatorio") @Size(max = 100, message = "El parentesco es demasiado extenso") String getParentescoFamiliar() {
         return parentescoFamiliar;
     }
 
-    public void setParentescoFamiliar(@Size(max = 100, message = "El parentesco de patologías es demasiado extenso") String parentescoFamiliar) {
+    public void setParentescoFamiliar(@NotBlank(message = "El parentesco es obligatorio") @Size(max = 100, message = "El parentesco es demasiado extenso") String parentescoFamiliar) {
         this.parentescoFamiliar = parentescoFamiliar;
     }
 
-    public String getTelefonoFamiliar() {
+    public @NotBlank(message = "El telefono del familiar es obligatorio") @Pattern(regexp = "^\\+?[0-9\\s\\-]{7,20}$", message = "El telefono del familiar debe tener un formato valido") String getTelefonoFamiliar() {
         return telefonoFamiliar;
     }
 
-    public void setTelefonoFamiliar(String telefonoFamiliar) {
+    public void setTelefonoFamiliar(@NotBlank(message = "El telefono del familiar es obligatorio") @Pattern(regexp = "^\\+?[0-9\\s\\-]{7,20}$", message = "El telefono del familiar debe tener un formato valido") String telefonoFamiliar) {
         this.telefonoFamiliar = telefonoFamiliar;
     }
 

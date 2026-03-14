@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { registrosService } from '../services/registrosService';
 import { residentesService } from '../services/residentesService';
 import { toast } from 'react-toastify';
-import { isUnauthorized } from '../services/apiClient';
+import { getErrorMessage, isUnauthorized } from '../services/apiClient';
 
 const Historial = () => {
   const [residentes, setResidentes] = useState([]);
@@ -68,7 +68,7 @@ const Historial = () => {
       }
     } catch (error) {
       if (!isUnauthorized(error)) {
-        toast.error('Error al buscar registros');
+        toast.error(getErrorMessage(error, 'No se pudieron buscar registros'));
         setRegistros([]);
         setTotalRegistros(0);
       }
@@ -298,7 +298,7 @@ const Historial = () => {
                       const data = await registrosService.getWithFilters(filtrosParaEnviar, nuevaPagina, registrosPorPagina);
                       setRegistros(Array.isArray(data) ? data : []);
                     } catch (error) {
-                      if (!isUnauthorized(error)) toast.error('Error al cargar la página');
+                      if (!isUnauthorized(error)) toast.error(getErrorMessage(error, 'No se pudo cargar la pagina'));
                     } finally {
                       setLoading(false);
                     }
@@ -330,7 +330,7 @@ const Historial = () => {
                         setTotalRegistros((nuevaPagina + 1) * registrosPorPagina + 1);
                       }
                     } catch (error) {
-                        if (!isUnauthorized(error)) toast.error('Error al cargar la página');
+                        if (!isUnauthorized(error)) toast.error(getErrorMessage(error, 'No se pudo cargar la pagina'));
                     } finally {
                       setLoading(false);
                     }

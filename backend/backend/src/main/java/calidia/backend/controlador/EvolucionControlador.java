@@ -6,6 +6,7 @@ import calidia.backend.dto.PaginacionDTO;
 import calidia.backend.dto.mappers.EvolucionMapper;
 import calidia.backend.dto.response.EvolucionResponseDTO;
 import calidia.backend.servicio.EvolucionServicio;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class EvolucionControlador {
     }
 
     @PostMapping
-    public EvolucionResponseDTO registrar(@RequestBody EvolucionDTO dto) {
+    public EvolucionResponseDTO registrar(@Valid @RequestBody EvolucionDTO dto) {
         return EvolucionMapper.toDTO(
                 evolucionServicio.registrarEvolucion(dto)
         );
@@ -36,7 +37,7 @@ public class EvolucionControlador {
     }
 
     @PostMapping("/residente/filtrado")
-    public List<EvolucionResponseDTO> historialFiltrado(@RequestBody HistorialDTO dto, @RequestParam  int page, @RequestParam int size){
+    public List<EvolucionResponseDTO> historialFiltrado(@Valid @RequestBody HistorialDTO dto, @RequestParam  int page, @RequestParam int size){
         return evolucionServicio.historialFiltrado(dto, page, size)
                 .stream()
                 .map(EvolucionMapper::toDTO)

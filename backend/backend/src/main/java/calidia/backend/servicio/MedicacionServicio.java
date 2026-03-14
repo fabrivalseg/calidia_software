@@ -52,7 +52,8 @@ public class MedicacionServicio {
 
     public Medicacion actualizarMedicacion(Long id, MedicacionDTO dto){
         Medicacion medicacion = medicacionRepositorio.findById(id)
-                .orElseThrow();
+            .orElseThrow(() ->
+                new ResourceNotFoundException("No se encontro la medicacion"));
         medicacion.setNombre(dto.getNombre());
         medicacion.setCantidad(dto.getCantidad());
         medicacion.setHora(dto.getHora());

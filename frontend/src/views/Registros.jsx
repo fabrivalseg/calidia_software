@@ -4,7 +4,7 @@ import { residentesService } from '../services/residentesService';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
-import { isUnauthorized } from '../services/apiClient';
+import { getErrorMessage, isUnauthorized } from '../services/apiClient';
 
 const Registros = () => {
   const [residentes, setResidentes] = useState([]);
@@ -70,7 +70,7 @@ const Registros = () => {
         setTotalRegistros((paginaActual + 1) * registrosPorPagina + 1);
       }
     } catch (error) {
-        if (!isUnauthorized(error)) toast.error('Error al cargar los registros');
+        if (!isUnauthorized(error)) toast.error(getErrorMessage(error, 'No se pudieron cargar los registros'));
     } finally {
       setLoading(false);
     }
@@ -107,12 +107,22 @@ const Registros = () => {
 
       const evolucion = formulario.evolucion.trim();
       const notas = formulario.notas.trim();
+      const turnoMap = {
+        manana: 'Manana',
+        tarde: 'Tarde',
+        noche: 'Noche'
+      };
+      const turnoApi = turnoMap[
+        turnoActual
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+      ] || 'Manana';
 
       const nuevoRegistro = {
         dniResidente: residenteSeleccionado.dni,
         fecha: fechaActual,
         hora: horaActual,
-        turno: turnoActual,
+        turno: turnoApi,
         evolucion: evolucion,
         notas: notas,
         signosVitales: signosVitales.trim()
@@ -141,15 +151,23 @@ const Registros = () => {
       setPaginaActual(0);
       loadRegistros();
     } catch (error) {
-      if (!isUnauthorized(error)) toast.error('Error al guardar el registro');
+      if (!isUnauthorized(error)) {
+        toast.error(getErrorMessage(error, 'No se pudo guardar el registro'));
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const getTurnoIcon = (turno) => {
-    switch (turno) {
-      case 'mañana': return 'M';
+    const normalized = (turno || '')
+      .toString()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    switch (normalized) {
+      case 'manana': return 'M';
       case 'tarde': return 'T';
       case 'noche': return 'N';
       default: return '';
@@ -355,15 +373,15 @@ const Registros = () => {
                   />
                 </div>
 
-                {/* notas */}
+                {/* Notas */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">notas</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Notas</label>
                   <textarea
                     value={formulario.notas}
                     onChange={(e) => setFormulario({...formulario, notas: e.target.value})}
                     rows={4}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none resize-none"
-                    placeholder="notas adicionales, comentarios o notas especiales..."
+                    placeholder="Notas adicionales, comentarios o notas especiales..."
                   />
                 </div>
 
@@ -459,14 +477,14 @@ const Registros = () => {
                       </div>
                     )}
 
-                    {/* notas */}
+                    {/* Notas */}
                     {registro.notas && (
                       <div className="bg-secondary-50 p-4 rounded-lg border border-secondary-200">
                         <p className="text-xs font-bold text-gray-600 uppercase mb-2 flex items-center">
                           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
-                          notas
+                          Notas
                         </p>
                         <p className="text-gray-700 leading-relaxed">{registro.notas}</p>
                       </div>

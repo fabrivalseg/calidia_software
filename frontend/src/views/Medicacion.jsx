@@ -3,7 +3,7 @@ import { medicacionService } from '../services/medicacionService';
 import { residentesService } from '../services/residentesService';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
-import { isUnauthorized } from '../services/apiClient';
+import { getErrorMessage, isUnauthorized } from '../services/apiClient';
 
 const Medicacion = () => {
   const [residentes, setResidentes] = useState([]);
@@ -52,7 +52,7 @@ const Medicacion = () => {
       const data = await medicacionService.getByResidente(residenteSeleccionado.dni);
       setMedicaciones(data);
     } catch (error) {
-      if (!isUnauthorized(error)) toast.error('Error al cargar la medicación');
+      if (!isUnauthorized(error)) toast.error(getErrorMessage(error, 'No se pudo cargar la medicacion'));
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,12 @@ const Medicacion = () => {
     if (!formulario.nombre.trim()) errors.nombre = 'El nombre es requerido';
     if (!formulario.momento) errors.momento = 'El momento es requerido';
     if (!formulario.hora) errors.hora = 'La hora es requerida';
-    if (!formulario.cantidad.trim()) errors.cantidad = 'La cantidad es requerida';
+    const cantidadNumero = Number(formulario.cantidad);
+    if (formulario.cantidad === '' || Number.isNaN(cantidadNumero)) {
+      errors.cantidad = 'La cantidad debe ser un numero';
+    } else if (cantidadNumero <= 0 || cantidadNumero > 100) {
+      errors.cantidad = 'La cantidad debe estar entre 1 y 100';
+    }
     return errors;
   };
 
@@ -110,6 +115,7 @@ const Medicacion = () => {
     try {
       const medicacionData = {
         ...formulario,
+        cantidad: Number(formulario.cantidad),
         dniResidente: residenteSeleccionado.dni,
       };
 
@@ -125,8 +131,9 @@ const Medicacion = () => {
       handleCancelForm();
     } catch (error) {
       if (!isUnauthorized(error)) {
-        toast.error('Error al guardar la medicación');
-        setFormErrors({ submit: 'Error al guardar la medicación' });
+        const msg = getErrorMessage(error, 'No se pudo guardar la medicacion');
+        toast.error(msg);
+        setFormErrors({ submit: msg });
       }
     } finally {
       setLoading(false);
@@ -309,12 +316,15 @@ const Medicacion = () => {
                       Cantidad/Dosis *
                     </label>
                     <input
-                      type="text"
+                      type="number"
                       name="cantidad"
                       value={formulario.cantidad}
                       onChange={handleInputChange}
+                      min="1"
+                      max="100"
+                      step="1"
                       className={`w-full px-4 py-3 rounded-lg border ${formErrors.cantidad ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none`}
-                      placeholder="Ej: 10mg, 1 comprimido, 5ml..."
+                      placeholder="Ej: 1"
                     />
                     {formErrors.cantidad && <p className="text-red-500 text-sm mt-1">{formErrors.cantidad}</p>}
                   </div>
