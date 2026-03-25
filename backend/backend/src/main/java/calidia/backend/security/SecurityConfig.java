@@ -43,7 +43,13 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 )
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/register").permitAll()
+                    .requestMatchers(
+                        "/api/auth/login",
+                        "/api/auth/logout",
+                        "/api/auth/register",
+                        "/api/auth/password-reset/request",
+                        "/api/auth/password-reset/confirm"
+                    ).permitAll()
                     .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
             )

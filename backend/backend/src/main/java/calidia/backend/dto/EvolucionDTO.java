@@ -25,7 +25,7 @@ public class EvolucionDTO {
     private String notas;
 
     @NotBlank(message = "El turno es obligatorio")
-    @Pattern(regexp = "^(?i)(Mañana|Manana|Tarde|Noche)$", message = "El turno debe ser Manana, Tarde o Noche")
+    @Pattern(regexp = "^(?i)(Mañana|Ma[nñ]ana|Tarde|Noche)$", message = "El turno debe ser Mañana, Tarde o Noche")
     private String turno;
 
     @NotBlank(message = "El DNI del residente es obligatorio")

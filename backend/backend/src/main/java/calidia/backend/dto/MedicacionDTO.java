@@ -17,10 +17,9 @@ public class MedicacionDTO {
     @Pattern(regexp = "^([01]?[0-9]|2[0-3]):[0-5][0-9]$", message = "La hora debe tener formato HH:mm")
     private String hora;
 
-    @NotNull(message = "La cantidad es obligatoria")
-    @Positive(message = "La cantidad debe ser mayor a 0")
-    @Max(value = 100, message = "Verifique la cantidad, parece excesiva")
-    private Integer cantidad;
+    @NotBlank(message = "La cantidad/dosis es obligatoria")
+    @Size(max = 50, message = "La cantidad/dosis es demasiado larga")
+    private String cantidad;
 
     @NotNull(message = "El tipo de medicación es obligatorio")
     private TipoMedicacion tipo;
@@ -52,11 +51,11 @@ public class MedicacionDTO {
         this.hora = hora;
     }
 
-    public Integer getCantidad() {
+    public String getCantidad() {
         return cantidad;
     }
 
-    public void setCantidad(Integer cantidad) {
+    public void setCantidad(String cantidad) {
         this.cantidad = cantidad;
     }
 

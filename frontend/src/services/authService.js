@@ -55,5 +55,25 @@ export const authService = {
       }
       throw error;
     }
+  },
+
+  requestPasswordReset: async (email) => {
+    return await apiRequest('/auth/password-reset/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    }, {
+      skipAuthHandling: true
+    });
+  },
+
+  confirmPasswordReset: async (token, newPassword) => {
+    return await apiRequest('/auth/password-reset/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword })
+    }, {
+      skipAuthHandling: true
+    });
   }
 };

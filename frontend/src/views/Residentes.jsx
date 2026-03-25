@@ -3,6 +3,27 @@ import { residentesService } from '../services/residentesService';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { getErrorMessage, isUnauthorized } from '../services/apiClient';
+import { calculateAgeFromDate, formatDateEsAr } from '../utils/dateUtils';
+
+const createInitialFamiliar = () => ({
+  nombre: '',
+  apellido: '',
+  parentesco: '',
+  telefono: ''
+});
+
+const createInitialFormData = () => ({
+  nombre: '',
+  apellido: '',
+  dni: '',
+  fechaNacimiento: '',
+  fechaIngreso: '',
+  obraSocial: '',
+  familiares: [createInitialFamiliar()],
+  medico: '',
+  patologias: '',
+  medicacion: ''
+});
 
 const Residentes = ({ onSelectResidente }) => {
   const [residentes, setResidentes] = useState([]);
@@ -10,21 +31,7 @@ const Residentes = ({ onSelectResidente }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedResidente, setSelectedResidente] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    dni: '',
-    fechaNacimiento: '',
-    fechaIngreso: '',
-    obraSocial: '',
-    nombreFamiliar: '',
-    apellidoFamiliar: '',
-    parentesco: '',
-    telefonoFamiliar: '',
-    medico: '',
-    patologias: '',
-    medicacion: ''
-  });
+  const [formData, setFormData] = useState(createInitialFormData());
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -63,17 +70,6 @@ const Residentes = ({ onSelectResidente }) => {
     }
   };
 
-  const calcularEdad = (fechaNacimiento) => {
-    const hoy = new Date();
-    const nacimiento = new Date(fechaNacimiento);
-    let edad = hoy.getFullYear() - nacimiento.getFullYear();
-    const mes = hoy.getMonth() - nacimiento.getMonth();
-    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
-      edad--;
-    }
-    return edad;
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -88,6 +84,51 @@ const Residentes = ({ onSelectResidente }) => {
     }
   };
 
+  const handleFamiliarChange = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      familiares: prev.familiares.map((familiar, idx) => (
+        idx === index ? { ...familiar, [field]: value } : familiar
+      ))
+    }));
+
+    const errorKey = `familiares_${index}_${field}`;
+    if (formErrors[errorKey]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [errorKey]: ''
+      }));
+    }
+  };
+
+  const handleAddFamiliar = () => {
+    setFormData(prev => ({
+      ...prev,
+      familiares: [...prev.familiares, createInitialFamiliar()]
+    }));
+  };
+
+  const handleRemoveFamiliar = (index) => {
+    if (formData.familiares.length === 1) {
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      familiares: prev.familiares.filter((_, idx) => idx !== index)
+    }));
+
+    setFormErrors(prev => {
+      const next = { ...prev };
+      Object.keys(next)
+        .filter(key => key.startsWith(`familiares_${index}_`))
+        .forEach(key => {
+          delete next[key];
+        });
+      return next;
+    });
+  };
+
   const validateForm = () => {
     const errors = {};
     
@@ -97,11 +138,18 @@ const Residentes = ({ onSelectResidente }) => {
     if (!formData.fechaNacimiento) errors.fechaNacimiento = 'La fecha de nacimiento es requerida';
     if (!formData.fechaIngreso) errors.fechaIngreso = 'La fecha de ingreso es requerida';
     if (!formData.obraSocial.trim()) errors.obraSocial = 'La obra social es requerida';
-    if (!formData.nombreFamiliar.trim()) errors.nombreFamiliar = 'El nombre del familiar es requerido';
-    if (!formData.apellidoFamiliar.trim()) errors.apellidoFamiliar = 'El apellido del familiar es requerido';
-    if (!formData.parentesco.trim()) errors.parentesco = 'El parentesco es requerido';
-    if (!formData.telefonoFamiliar.trim()) errors.telefonoFamiliar = 'El teléfono es requerido';
     if (!formData.medico.trim()) errors.medico = 'El médico de cabecera es requerido';
+
+    if (!formData.familiares.length) {
+      errors.familiares = 'Debes agregar al menos un familiar';
+    }
+
+    formData.familiares.forEach((familiar, index) => {
+      if (!familiar.nombre.trim()) errors[`familiares_${index}_nombre`] = 'El nombre es requerido';
+      if (!familiar.apellido.trim()) errors[`familiares_${index}_apellido`] = 'El apellido es requerido';
+      if (!familiar.parentesco.trim()) errors[`familiares_${index}_parentesco`] = 'El parentesco es requerido';
+      if (!familiar.telefono.trim()) errors[`familiares_${index}_telefono`] = 'El teléfono es requerido';
+    });
 
     return errors;
   };
@@ -141,10 +189,7 @@ const Residentes = ({ onSelectResidente }) => {
         fechaNacimiento: formData.fechaNacimiento,
         fechaIngreso: formData.fechaIngreso,
         obraSocial: formData.obraSocial,
-        nombreFamiliar: formData.nombreFamiliar,
-        apellidoFamiliar: formData.apellidoFamiliar,
-        parentescoFamiliar: formData.parentesco,
-        telefonoFamiliar: formData.telefonoFamiliar,
+        familiares: formData.familiares,
         medico: formData.medico,
         patologias: formData.patologias,
         medicacion: formData.medicacion
@@ -158,21 +203,7 @@ const Residentes = ({ onSelectResidente }) => {
       
       // Cerrar formulario y limpiar
       setShowForm(false);
-      setFormData({
-        nombre: '',
-        apellido: '',
-        dni: '',
-        fechaNacimiento: '',
-        fechaIngreso: '',
-        obraSocial: '',
-        nombreFamiliar: '',
-        apellidoFamiliar: '',
-        parentesco: '',
-        telefonoFamiliar: '',
-        medico: '',
-        patologias: '',
-        medicacion: ''
-      });
+      setFormData(createInitialFormData());
       
     } catch (error) {
         if (!isUnauthorized(error)) {
@@ -207,21 +238,13 @@ const Residentes = ({ onSelectResidente }) => {
     }
     
     setShowForm(false);
-    setFormData({
-      nombre: '',      apellido: '',      dni: '',
-      fechaNacimiento: '',
-      fechaIngreso: '',
-      obraSocial: '',
-      nombreFamiliar: '',
-      apellidoFamiliar: '',
-      parentesco: '',
-      telefonoFamiliar: '',
-      medico: '',
-      patologias: '',
-      medicacion: ''
-    });
+    setFormData(createInitialFormData());
     setFormErrors({});
   };
+
+  const familiaresDetalle = (selectedResidente?.familiares && selectedResidente.familiares.length)
+    ? selectedResidente.familiares
+    : (selectedResidente?.familiar ? [selectedResidente.familiar] : []);
 
   if (loading) {
     return (
@@ -372,73 +395,103 @@ const Residentes = ({ onSelectResidente }) => {
 
             {/* Contacto Familiar */}
             <div>
-              <h4 className="font-semibold text-lg text-gray-700 border-b pb-2 mb-4">Contacto Familiar</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre del Familiar *
-                  </label>
-                  <input
-                    type="text"
-                    name="nombreFamiliar"
-                    value={formData.nombreFamiliar}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 rounded-lg border ${formErrors.nombreFamiliar ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none`}
-                    placeholder="Juan"
-                  />
-                  {formErrors.nombreFamiliar && <p className="text-red-500 text-sm mt-1">{formErrors.nombreFamiliar}</p>}
-                </div>
+              <div className="flex items-center justify-between border-b pb-2 mb-4">
+                <h4 className="font-semibold text-lg text-gray-700">Contacto Familiar</h4>
+                <button
+                  type="button"
+                  onClick={handleAddFamiliar}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Agregar familiar
+                </button>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Apellido del Familiar *
-                  </label>
-                  <input
-                    type="text"
-                    name="apellidoFamiliar"
-                    value={formData.apellidoFamiliar}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 rounded-lg border ${formErrors.apellidoFamiliar ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none`}
-                    placeholder="Pérez"
-                  />
-                  {formErrors.apellidoFamiliar && <p className="text-red-500 text-sm mt-1">{formErrors.apellidoFamiliar}</p>}
-                </div>
+              {formErrors.familiares && <p className="text-red-500 text-sm mb-3">{formErrors.familiares}</p>}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Parentesco *
-                  </label>
-                  <select
-                    name="parentesco"
-                    value={formData.parentesco}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 rounded-lg border ${formErrors.parentesco ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white`}
-                  >
-                    <option value="">Seleccione...</option>
-                    <option value="Hijo/a">Hijo/a</option>
-                    <option value="Nieto/a">Nieto/a</option>
-                    <option value="Hermano/a">Hermano/a</option>
-                    <option value="Sobrino/a">Sobrino/a</option>
-                    <option value="Cónyuge">Cónyuge</option>
-                    <option value="Otro">Otro</option>
-                  </select>
-                  {formErrors.parentesco && <p className="text-red-500 text-sm mt-1">{formErrors.parentesco}</p>}
-                </div>
+              <div className="space-y-4">
+                {formData.familiares.map((familiar, index) => (
+                  <div key={`familiar-${index}`} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h5 className="font-medium text-gray-700">Familiar {index + 1}</h5>
+                      {formData.familiares.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFamiliar(index)}
+                          className="text-sm text-red-600 hover:text-red-700"
+                        >
+                          Quitar
+                        </button>
+                      )}
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Teléfono *
-                  </label>
-                  <input
-                    type="tel"
-                    name="telefonoFamiliar"
-                    value={formData.telefonoFamiliar}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 rounded-lg border ${formErrors.telefonoFamiliar ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none`}
-                    placeholder="351-1234567"
-                  />
-                  {formErrors.telefonoFamiliar && <p className="text-red-500 text-sm mt-1">{formErrors.telefonoFamiliar}</p>}
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Nombre del Familiar *
+                        </label>
+                        <input
+                          type="text"
+                          value={familiar.nombre}
+                          onChange={(e) => handleFamiliarChange(index, 'nombre', e.target.value)}
+                          className={`w-full px-4 py-3 rounded-lg border ${formErrors[`familiares_${index}_nombre`] ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none`}
+                          placeholder="Juan"
+                        />
+                        {formErrors[`familiares_${index}_nombre`] && <p className="text-red-500 text-sm mt-1">{formErrors[`familiares_${index}_nombre`]}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Apellido del Familiar *
+                        </label>
+                        <input
+                          type="text"
+                          value={familiar.apellido}
+                          onChange={(e) => handleFamiliarChange(index, 'apellido', e.target.value)}
+                          className={`w-full px-4 py-3 rounded-lg border ${formErrors[`familiares_${index}_apellido`] ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none`}
+                          placeholder="Perez"
+                        />
+                        {formErrors[`familiares_${index}_apellido`] && <p className="text-red-500 text-sm mt-1">{formErrors[`familiares_${index}_apellido`]}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Parentesco *
+                        </label>
+                        <select
+                          value={familiar.parentesco}
+                          onChange={(e) => handleFamiliarChange(index, 'parentesco', e.target.value)}
+                          className={`w-full px-4 py-3 rounded-lg border ${formErrors[`familiares_${index}_parentesco`] ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white`}
+                        >
+                          <option value="">Seleccione...</option>
+                          <option value="Hijo/a">Hijo/a</option>
+                          <option value="Nieto/a">Nieto/a</option>
+                          <option value="Hermano/a">Hermano/a</option>
+                          <option value="Sobrino/a">Sobrino/a</option>
+                          <option value="Conyuge">Conyuge</option>
+                          <option value="Otro">Otro</option>
+                        </select>
+                        {formErrors[`familiares_${index}_parentesco`] && <p className="text-red-500 text-sm mt-1">{formErrors[`familiares_${index}_parentesco`]}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Telefono *
+                        </label>
+                        <input
+                          type="tel"
+                          value={familiar.telefono}
+                          onChange={(e) => handleFamiliarChange(index, 'telefono', e.target.value)}
+                          className={`w-full px-4 py-3 rounded-lg border ${formErrors[`familiares_${index}_telefono`] ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none`}
+                          placeholder="351-1234567"
+                        />
+                        {formErrors[`familiares_${index}_telefono`] && <p className="text-red-500 text-sm mt-1">{formErrors[`familiares_${index}_telefono`]}</p>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -544,11 +597,11 @@ const Residentes = ({ onSelectResidente }) => {
               <div className="p-4 space-y-3">
                 <div className="flex items-center text-sm">
                   <span className="text-gray-500 w-32">Edad:</span>
-                  <span className="font-medium">{calcularEdad(residente.fechaNacimiento)} años</span>
+                  <span className="font-medium">{calculateAgeFromDate(residente.fechaNacimiento)} años</span>
                 </div>
                 <div className="flex items-center text-sm">
                   <span className="text-gray-500 w-32">Fecha de Ingreso:</span>
-                  <span className="font-medium">{new Date(residente.fechaIngreso).toLocaleDateString('es-AR')}</span>
+                  <span className="font-medium">{formatDateEsAr(residente.fechaIngreso)}</span>
                 </div>
                 <div className="flex items-center text-sm">
                   <span className="text-gray-500 w-32">Obra Social:</span>
@@ -594,11 +647,11 @@ const Residentes = ({ onSelectResidente }) => {
                 </div>
                 <div>
                   <label className="text-sm text-gray-500">Fecha de Nacimiento</label>
-                  <p className="font-medium">{new Date(selectedResidente.fechaNacimiento).toLocaleDateString('es-AR')}</p>
+                  <p className="font-medium">{formatDateEsAr(selectedResidente.fechaNacimiento)}</p>
                 </div>
                 <div>
                   <label className="text-sm text-gray-500">Fecha de Ingreso</label>
-                  <p className="font-medium">{new Date(selectedResidente.fechaIngreso).toLocaleDateString('es-AR')}</p>
+                  <p className="font-medium">{formatDateEsAr(selectedResidente.fechaIngreso)}</p>
                 </div>
               </div>
             </div>
@@ -629,20 +682,28 @@ const Residentes = ({ onSelectResidente }) => {
             {/* Contacto Familiar */}
             <div className="md:col-span-2 space-y-4">
               <h4 className="font-semibold text-lg text-gray-700 border-b pb-2">Contacto Familiar</h4>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm text-gray-500">Nombre</label>
-                  <p className="font-medium">{selectedResidente.familiar.nombre} {selectedResidente.familiar.apellido}</p>
+              {familiaresDetalle.length === 0 ? (
+                <p className="text-sm text-gray-500">Sin familiares cargados.</p>
+              ) : (
+                <div className="space-y-3">
+                  {familiaresDetalle.map((familiar, index) => (
+                    <div key={`detalle-familiar-${familiar.id ?? index}`} className="grid md:grid-cols-3 gap-4 border border-gray-200 rounded-lg p-3">
+                      <div>
+                        <label className="text-sm text-gray-500">Nombre</label>
+                        <p className="font-medium">{familiar.nombre} {familiar.apellido}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-500">Parentesco</label>
+                        <p className="font-medium">{familiar.parentesco}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-500">Teléfono</label>
+                        <p className="font-medium">{familiar.telefono}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <label className="text-sm text-gray-500">Parentesco</label>
-                  <p className="font-medium">{selectedResidente.familiar.parentesco}</p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-500">Teléfono</label>
-                  <p className="font-medium">{selectedResidente.familiar.telefono}</p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

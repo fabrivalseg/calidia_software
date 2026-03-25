@@ -1,8 +1,11 @@
 package calidia.backend.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class ResidenteDTO {
 
@@ -34,21 +37,16 @@ public class ResidenteDTO {
 
     private String medicacion;
 
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(min = 2, max = 50)
     private String nombreFamiliar;
 
-    @NotBlank(message = "El apellido es obligatorio")
-    @Size(min = 2, max = 50)
     private String apellidoFamiliar;
 
-    @NotBlank(message = "El parentesco es obligatorio")
-    @Size(max = 100, message = "El parentesco es demasiado extenso")
     private String parentescoFamiliar;
 
-    @NotBlank(message = "El telefono del familiar es obligatorio")
-    @Pattern(regexp = "^\\+?[0-9\\s\\-]{7,20}$", message = "El telefono del familiar debe tener un formato valido")
     private String telefonoFamiliar;
+
+    @Valid
+    private List<FamiliarDTO> familiares;
 
     public String getDni() {
         return dni;
@@ -114,35 +112,35 @@ public class ResidenteDTO {
         this.patologias = patologias;
     }
 
-    public @NotBlank(message = "El nombre es obligatorio") @Size(min = 2, max = 50) String getNombreFamiliar() {
+    public String getNombreFamiliar() {
         return nombreFamiliar;
     }
 
-    public void setNombreFamiliar(@NotBlank(message = "El nombre es obligatorio") @Size(min = 2, max = 50) String nombreFamiliar) {
+    public void setNombreFamiliar(String nombreFamiliar) {
         this.nombreFamiliar = nombreFamiliar;
     }
 
-    public @NotBlank(message = "El apellido es obligatorio") @Size(min = 2, max = 50) String getApellidoFamiliar() {
+    public String getApellidoFamiliar() {
         return apellidoFamiliar;
     }
 
-    public void setApellidoFamiliar(@NotBlank(message = "El apellido es obligatorio") @Size(min = 2, max = 50) String apellidoFamiliar) {
+    public void setApellidoFamiliar(String apellidoFamiliar) {
         this.apellidoFamiliar = apellidoFamiliar;
     }
 
-    public @NotBlank(message = "El parentesco es obligatorio") @Size(max = 100, message = "El parentesco es demasiado extenso") String getParentescoFamiliar() {
+    public String getParentescoFamiliar() {
         return parentescoFamiliar;
     }
 
-    public void setParentescoFamiliar(@NotBlank(message = "El parentesco es obligatorio") @Size(max = 100, message = "El parentesco es demasiado extenso") String parentescoFamiliar) {
+    public void setParentescoFamiliar(String parentescoFamiliar) {
         this.parentescoFamiliar = parentescoFamiliar;
     }
 
-    public @NotBlank(message = "El telefono del familiar es obligatorio") @Pattern(regexp = "^\\+?[0-9\\s\\-]{7,20}$", message = "El telefono del familiar debe tener un formato valido") String getTelefonoFamiliar() {
+    public String getTelefonoFamiliar() {
         return telefonoFamiliar;
     }
 
-    public void setTelefonoFamiliar(@NotBlank(message = "El telefono del familiar es obligatorio") @Pattern(regexp = "^\\+?[0-9\\s\\-]{7,20}$", message = "El telefono del familiar debe tener un formato valido") String telefonoFamiliar) {
+    public void setTelefonoFamiliar(String telefonoFamiliar) {
         this.telefonoFamiliar = telefonoFamiliar;
     }
 
@@ -152,6 +150,29 @@ public class ResidenteDTO {
 
     public void setMedicacion(String medicacion) {
         this.medicacion = medicacion;
+    }
+
+    public List<FamiliarDTO> getFamiliares() {
+        return familiares;
+    }
+
+    public void setFamiliares(List<FamiliarDTO> familiares) {
+        this.familiares = familiares;
+    }
+
+    @AssertTrue(message = "Debe informar al menos un familiar de contacto")
+    public boolean isInformacionFamiliarValida() {
+        if (familiares != null && !familiares.isEmpty()) {
+            return true;
+        }
+        return hasText(nombreFamiliar)
+                && hasText(apellidoFamiliar)
+                && hasText(parentescoFamiliar)
+                && hasText(telefonoFamiliar);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }
 

@@ -3,6 +3,7 @@ import { registrosService } from '../services/registrosService';
 import { residentesService } from '../services/residentesService';
 import { toast } from 'react-toastify';
 import { getErrorMessage, isUnauthorized } from '../services/apiClient';
+import { formatDateEsAr } from '../utils/dateUtils';
 
 const Historial = () => {
   const [residentes, setResidentes] = useState([]);
@@ -103,9 +104,6 @@ const Historial = () => {
     return residente ? `${residente.nombre} ${residente.apellido}` : 'Desconocido';
   };
 
-  useEffect(() => {
-    console.log('Registros actualizados:', registros);
-  })
 
   return (
     <div className="space-y-6">
@@ -228,7 +226,7 @@ const Historial = () => {
                         {getResidenteNombre(registro.residenteDni)}
                       </h4>
                       <p className="text-sm text-gray-500 capitalize">
-                        {registro.turno} • {new Date(registro.fecha).toLocaleDateString('es-AR', { 
+                        {registro.turno} • {formatDateEsAr(registro.fecha, { 
                           weekday: 'long', 
                           year: 'numeric', 
                           month: 'long', 

@@ -22,6 +22,14 @@ const Medicacion = () => {
   });
   const [formErrors, setFormErrors] = useState({});
 
+  const formularioInicial = {
+    nombre: '',
+    momento: '',
+    hora: '',
+    cantidad: '',
+    tipo: 'REGULAR'
+  };
+
   const momentosOpciones = [
     'Ayuno',
     'Desayuno',
@@ -77,11 +85,10 @@ const Medicacion = () => {
     if (!formulario.nombre.trim()) errors.nombre = 'El nombre es requerido';
     if (!formulario.momento) errors.momento = 'El momento es requerido';
     if (!formulario.hora) errors.hora = 'La hora es requerida';
-    const cantidadNumero = Number(formulario.cantidad);
-    if (formulario.cantidad === '' || Number.isNaN(cantidadNumero)) {
-      errors.cantidad = 'La cantidad debe ser un numero';
-    } else if (cantidadNumero <= 0 || cantidadNumero > 100) {
-      errors.cantidad = 'La cantidad debe estar entre 1 y 100';
+    if (!formulario.cantidad.trim()) {
+      errors.cantidad = 'La cantidad/dosis es requerida';
+    } else if (formulario.cantidad.trim().length > 50) {
+      errors.cantidad = 'La cantidad/dosis no puede superar 50 caracteres';
     }
     return errors;
   };
@@ -115,7 +122,7 @@ const Medicacion = () => {
     try {
       const medicacionData = {
         ...formulario,
-        cantidad: Number(formulario.cantidad),
+        cantidad: formulario.cantidad.trim(),
         dniResidente: residenteSeleccionado.dni,
       };
 
@@ -149,19 +156,29 @@ const Medicacion = () => {
       cantidad: medicacion.cantidad,
       tipo: medicacion.tipo
     });
+    setFormErrors({});
     setMostrarFormulario(true);
+  };
+
+  const handleOpenAddForm = () => {
+    setMedicacionEditando(null);
+    setFormulario(formularioInicial);
+    setFormErrors({});
+    setMostrarFormulario(true);
+  };
+
+  const handleToggleFormulario = () => {
+    if (mostrarFormulario) {
+      handleCancelForm();
+      return;
+    }
+    handleOpenAddForm();
   };
 
   const handleCancelForm = () => {
     setMostrarFormulario(false);
     setMedicacionEditando(null);
-    setFormulario({
-      nombre: '',
-      momento: '',
-      hora: '',
-      cantidad: '',
-      tipo: 'REGULAR'
-    });
+    setFormulario(formularioInicial);
     setFormErrors({});
   };
 
@@ -240,7 +257,7 @@ const Medicacion = () => {
                 <p className="text-secondary-50/90 mt-1">DNI: {residenteSeleccionado.dni}</p>
               </div>
               <button
-                onClick={() => setMostrarFormulario(!mostrarFormulario)}
+                onClick={handleToggleFormulario}
                 className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-secondary-50 transition-colors flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,15 +333,12 @@ const Medicacion = () => {
                       Cantidad/Dosis *
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="cantidad"
                       value={formulario.cantidad}
                       onChange={handleInputChange}
-                      min="1"
-                      max="100"
-                      step="1"
                       className={`w-full px-4 py-3 rounded-lg border ${formErrors.cantidad ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none`}
-                      placeholder="Ej: 1"
+                      placeholder="Ej: 1 comprimido, medio comprimido, 5 ml"
                     />
                     {formErrors.cantidad && <p className="text-red-500 text-sm mt-1">{formErrors.cantidad}</p>}
                   </div>

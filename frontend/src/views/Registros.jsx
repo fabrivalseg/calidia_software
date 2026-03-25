@@ -5,12 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { getErrorMessage, isUnauthorized } from '../services/apiClient';
+import { formatDateEsAr, getTodayLocalDate } from '../utils/dateUtils';
 
 const Registros = () => {
   const [residentes, setResidentes] = useState([]);
   const [residenteSeleccionado, setResidenteSeleccionado] = useState(null);
   const [turnoActual, setTurnoActual] = useState('mañana');
-  const [fechaActual, setFechaActual] = useState(new Date().toISOString().split('T')[0]);
+  const [fechaActual, setFechaActual] = useState(getTodayLocalDate());
   const [horaActual, setHoraActual] = useState(new Date().toTimeString().slice(0, 5));
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,6 +31,11 @@ const Registros = () => {
     glucemia: '',
     saturacionOxigeno: ''
   });
+
+  const syncFechaHoraActual = () => {
+    setFechaActual(getTodayLocalDate());
+    setHoraActual(new Date().toTimeString().slice(0, 5));
+  };
 
   useEffect(() => {
     loadResidentes();
@@ -107,16 +113,10 @@ const Registros = () => {
 
       const evolucion = formulario.evolucion.trim();
       const notas = formulario.notas.trim();
-      const turnoMap = {
-        manana: 'Manana',
-        tarde: 'Tarde',
-        noche: 'Noche'
-      };
-      const turnoApi = turnoMap[
-        turnoActual
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-      ] || 'Manana';
+      const turnoTexto = (turnoActual || '').toString().toLowerCase();
+      let turnoApi = 'Mañana';
+      if (turnoTexto === 'tarde') turnoApi = 'Tarde';
+      if (turnoTexto === 'noche') turnoApi = 'Noche';
 
       const nuevoRegistro = {
         dniResidente: residenteSeleccionado.dni,
@@ -145,7 +145,7 @@ const Registros = () => {
       });
       
       // Actualizar hora al momento actual
-      setHoraActual(new Date().toTimeString().slice(0, 5));
+      syncFechaHoraActual();
       
       setMostrarFormulario(false);
       setPaginaActual(0);
@@ -160,14 +160,10 @@ const Registros = () => {
   };
 
   const getTurnoIcon = (turno) => {
-    const normalized = (turno || '')
-      .toString()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+    const turnoTexto = (turno || '').toString().toLowerCase();
+    if (/^ma(ñ|n)ana$/i.test(turnoTexto)) return 'M';
 
-    switch (normalized) {
-      case 'manana': return 'M';
+    switch (turnoTexto) {
       case 'tarde': return 'T';
       case 'noche': return 'N';
       default: return '';
@@ -231,7 +227,13 @@ const Registros = () => {
                 <p className="text-secondary-50/90 mt-1">DNI: {residenteSeleccionado.dni} • Obra Social: {residenteSeleccionado.obraSocial}</p>
               </div>
               <button
-                onClick={() => setMostrarFormulario(!mostrarFormulario)}
+                onClick={() => {
+                  const siguienteEstado = !mostrarFormulario;
+                  if (siguienteEstado) {
+                    syncFechaHoraActual();
+                  }
+                  setMostrarFormulario(siguienteEstado);
+                }}
                 className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-secondary-50 transition-colors"
               >
                 {mostrarFormulario ? 'Cancelar' : 'Nuevo Registro'}
@@ -436,7 +438,7 @@ const Registros = () => {
                         <div>
                           <p className="font-semibold text-gray-800 capitalize">{registro.turno}</p>
                           <p className="text-sm text-gray-500">
-                            {new Date(registro.fecha).toLocaleDateString('es-AR', { 
+                            {formatDateEsAr(registro.fecha, { 
                               weekday: 'long', 
                               year: 'numeric', 
                               month: 'long', 

@@ -3,6 +3,8 @@ package calidia.backend.modelo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -44,6 +46,14 @@ public class Residente {
     @JoinColumn(name = "id_familiar")
     @NotNull(message = "El residente debe tener un familiar de contacto asociado")
     private Familiar familiar;
+
+        @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+        @JoinTable(
+            name = "residente_familiares",
+            joinColumns = @JoinColumn(name = "residente_dni"),
+            inverseJoinColumns = @JoinColumn(name = "familiar_id")
+        )
+        private List<Familiar> familiares = new ArrayList<>();
 
 
 
@@ -117,6 +127,14 @@ public class Residente {
 
     public void setFamiliar(Familiar familiar) {
         this.familiar = familiar;
+    }
+
+    public List<Familiar> getFamiliares() {
+        return familiares;
+    }
+
+    public void setFamiliares(List<Familiar> familiares) {
+        this.familiares = familiares;
     }
 
     public String getMedicacion() {

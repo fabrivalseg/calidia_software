@@ -8,7 +8,7 @@ public class MedicacionResponseDTO {
     private String nombre;
     private String momento;
     private String hora;
-    private Integer cantidad;
+    private String cantidad;
     private TipoMedicacion tipo;
 
     public Long getId() {
@@ -43,11 +43,11 @@ public class MedicacionResponseDTO {
         this.hora = hora;
     }
 
-    public Integer getCantidad() {
+    public String getCantidad() {
         return cantidad;
     }
 
-    public void setCantidad(Integer cantidad) {
+    public void setCantidad(String cantidad) {
         this.cantidad = cantidad;
     }
 

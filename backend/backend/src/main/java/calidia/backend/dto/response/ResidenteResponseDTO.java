@@ -1,6 +1,7 @@
 package calidia.backend.dto.response;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class ResidenteResponseDTO {
 
@@ -15,6 +16,7 @@ public class ResidenteResponseDTO {
     private String patologias;
     private String medicacion;
     private FamiliarResponseDTO familiar;
+    private List<FamiliarResponseDTO> familiares;
 
     public String getDni() {
         return dni;
@@ -94,6 +96,14 @@ public class ResidenteResponseDTO {
 
     public void setFamiliar(FamiliarResponseDTO familiar) {
         this.familiar = familiar;
+    }
+
+    public List<FamiliarResponseDTO> getFamiliares() {
+        return familiares;
+    }
+
+    public void setFamiliares(List<FamiliarResponseDTO> familiares) {
+        this.familiares = familiares;
     }
 
     public String getMedicacion() {

@@ -24,15 +24,15 @@ public class ResidenteMapper {
         dto.setPatologias(residente.getPatologias());
         dto.setMedicacion(residente.getMedicacion());
 
+        if (residente.getFamiliares() != null && !residente.getFamiliares().isEmpty()) {
+            dto.setFamiliares(residente.getFamiliares().stream().map(ResidenteMapper::mapFamiliar).toList());
+        }
+
         Familiar familiar = residente.getFamiliar();
         if (familiar != null) {
-            FamiliarResponseDTO famDTO = new FamiliarResponseDTO();
-            famDTO.setId(familiar.getId());
-            famDTO.setNombre(familiar.getNombre());
-            famDTO.setApellido(familiar.getApellido());
-            famDTO.setParentesco(familiar.getParentesco());
-            famDTO.setTelefono(familiar.getTelefono());
-            dto.setFamiliar(famDTO);
+            dto.setFamiliar(mapFamiliar(familiar));
+        } else if (dto.getFamiliares() != null && !dto.getFamiliares().isEmpty()) {
+            dto.setFamiliar(dto.getFamiliares().get(0));
         }
 
         return dto;
@@ -40,5 +40,15 @@ public class ResidenteMapper {
 
     private static int calcularEdad(LocalDate fechaNacimiento) {
         return Period.between(fechaNacimiento, LocalDate.now()).getYears();
+    }
+
+    private static FamiliarResponseDTO mapFamiliar(Familiar familiar) {
+        FamiliarResponseDTO famDTO = new FamiliarResponseDTO();
+        famDTO.setId(familiar.getId());
+        famDTO.setNombre(familiar.getNombre());
+        famDTO.setApellido(familiar.getApellido());
+        famDTO.setParentesco(familiar.getParentesco());
+        famDTO.setTelefono(familiar.getTelefono());
+        return famDTO;
     }
 }

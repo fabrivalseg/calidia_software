@@ -14,7 +14,8 @@ public class Medicacion {
     private String nombre;
     private String momento;
     private String hora;
-    private Integer cantidad;
+    @Column(length = 50)
+    private String cantidad;
     @Enumerated(EnumType.STRING)
     private TipoMedicacion tipo;
     @ManyToOne
@@ -53,11 +54,11 @@ public class Medicacion {
         this.hora = hora;
     }
 
-    public Integer getCantidad() {
+    public String getCantidad() {
         return cantidad;
     }
 
-    public void setCantidad(Integer cantidad) {
+    public void setCantidad(String cantidad) {
         this.cantidad = cantidad;
     }
 
