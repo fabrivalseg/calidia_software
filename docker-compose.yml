@@ -41,6 +41,8 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        VITE_API_URL: ${FRONTEND_VITE_API_URL:-/api}
     container_name: frontend
     depends_on:
       - backend
