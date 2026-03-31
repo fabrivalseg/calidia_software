@@ -1,4 +1,5 @@
 .env
 .env.production
+.env.dev
 frontend/.env.production
 /backups
