@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { authService } from '../services/authService';
 import { getErrorMessage, setUnauthorizedHandler } from '../services/apiClient';

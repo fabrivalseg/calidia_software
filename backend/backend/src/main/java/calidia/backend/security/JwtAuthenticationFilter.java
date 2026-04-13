@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import io.jsonwebtoken.JwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,11 +25,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
+    private final boolean secureCookie;
+    private final String sameSite;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil,
-                                   CustomUserDetailsService userDetailsService) {
+                                   CustomUserDetailsService userDetailsService,
+                                   @Value("${security.cookie.secure:true}") boolean secureCookie,
+                                   @Value("${security.cookie.same-site:Lax}") String sameSite) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.secureCookie = secureCookie;
+        this.sameSite = sameSite;
     }
 
     @Override
@@ -93,10 +100,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void limpiarCookieAuth(HttpServletResponse response) {
         Cookie cookie = new Cookie("auth_token", "");
         cookie.setHttpOnly(true);
-        cookie.setSecure(false);
+        cookie.setSecure(secureCookie);
         cookie.setPath("/");
         cookie.setMaxAge(0);
-        cookie.setAttribute("SameSite", "Lax");
+        cookie.setAttribute("SameSite", sameSite);
         response.addCookie(cookie);
     }
 }

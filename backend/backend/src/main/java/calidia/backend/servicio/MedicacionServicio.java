@@ -62,5 +62,13 @@ public class MedicacionServicio {
         return medicacionRepositorio.save(medicacion);
 
     }
+
+    public void eliminarMedicacion(Long id) {
+        Medicacion medicacion = medicacionRepositorio.findById(id)
+            .orElseThrow(() ->
+                new ResourceNotFoundException("No se encontro la medicacion"));
+
+        medicacionRepositorio.delete(medicacion);
+    }
 }
 

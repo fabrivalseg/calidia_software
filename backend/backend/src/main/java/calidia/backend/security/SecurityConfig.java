@@ -52,7 +52,6 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                     .requestMatchers(
                         "/api/auth/login",
                         "/api/auth/logout",
-                        "/api/auth/register",
                         "/api/auth/password-reset/request",
                         "/api/auth/password-reset/confirm"
                     ).permitAll()

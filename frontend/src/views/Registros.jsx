@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { registrosService } from '../services/registrosService';
 import { residentesService } from '../services/residentesService';
-import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { getErrorMessage, isUnauthorized } from '../services/apiClient';
@@ -19,7 +18,6 @@ const Registros = () => {
   const [paginaActual, setPaginaActual] = useState(0);
   const [totalRegistros, setTotalRegistros] = useState(0);
   const registrosPorPagina = 5;
-  const { user } = useAuth();
 
   const [formulario, setFormulario] = useState({
     evolucion: '',

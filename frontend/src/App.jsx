@@ -9,6 +9,7 @@ import Residentes from './views/Residentes';
 import Registros from './views/Registros';
 import Medicacion from './views/Medicacion';
 import Historial from './views/Historial';
+import Usuarios from './views/Usuarios';
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
@@ -30,6 +31,8 @@ function AppContent() {
         return <Medicacion />;
       case 'historial':
         return <Historial />;
+      case 'usuarios':
+        return <Usuarios />;
       default:
         return <Inicio />;
     }

@@ -18,17 +18,6 @@ export const authService = {
     }
   },
 
-  // Registrar nuevo usuario
-  register: async (userData) => {
-    await apiRequest('/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData)
-    }, {
-      skipAuthHandling: true
-    });
-  },
-
   // Verificar sesión activa - La cookie se envía automáticamente
   verifySession: async () => {
     try {

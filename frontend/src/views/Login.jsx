@@ -5,14 +5,10 @@ import { toast } from 'react-toastify';
 
 const Login = () => {
   const passwordResetEnabled = import.meta.env.VITE_ENABLE_PASSWORD_RESET === 'true';
-  const [mode, setMode] = useState('login'); // login | register | recover
+  const [mode, setMode] = useState('login'); // login | recover
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [rol, setRol] = useState('enfermero');
   const [recoveryToken, setRecoveryToken] = useState('');
   const [recoveryRequested, setRecoveryRequested] = useState(false);
   const [error, setError] = useState('');
@@ -42,13 +38,6 @@ const Login = () => {
     clearFeedback();
     clearSensitiveFields();
     setRecoveryRequested(false);
-
-    if (nextMode === 'login') {
-      setNombre('');
-      setApellido('');
-      setTelefono('');
-      setRol('enfermero');
-    }
   };
 
   const handleSubmitLogin = async (e) => {
@@ -63,63 +52,6 @@ const Login = () => {
     }
 
     setLoading(false);
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    clearFeedback();
-
-    if (password !== confirmPassword) {
-      setError('Las contrasenas no coinciden');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('La contrasena debe tener al menos 6 caracteres');
-      return;
-    }
-
-    setLoading(true);
-
-    const roleMap = {
-      enfermero: 'ENFERMERO',
-      medico: 'MEDICO',
-      administrativo: 'ADMIN',
-      director: 'ADMIN'
-    };
-    const rolApi = roleMap[rol] || 'ENFERMERO';
-
-    try {
-      await authService.register({
-        email,
-        password,
-        nombre,
-        apellido,
-        telefono,
-        rol: rolApi
-      });
-
-      toast.success('Usuario registrado exitosamente. Ya puedes iniciar sesion.');
-      setSuccess('Usuario registrado exitosamente. Ya puedes iniciar sesion.');
-
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setNombre('');
-      setApellido('');
-      setTelefono('');
-      setRol('enfermero');
-
-      setTimeout(() => {
-        goToMode('login');
-      }, 1200);
-    } catch (err) {
-      const errorMsg = err.message || 'Error al registrar usuario';
-      toast.error(errorMsg);
-      setError(errorMsg);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleRequestRecovery = async (e) => {
@@ -217,7 +149,6 @@ const Login = () => {
           <div className="p-8">
             <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
               {mode === 'login' && 'Iniciar Sesion'}
-              {mode === 'register' && 'Crear Cuenta'}
               {mode === 'recover' && 'Recuperar Contrasena'}
             </h2>
 
@@ -282,166 +213,9 @@ const Login = () => {
                 )}
 
                 <div className="text-center pt-2">
-                  <button
-                    type="button"
-                    onClick={() => goToMode('register')}
-                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-                  >
-                    No tienes cuenta? Registrate aqui
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {mode === 'register' && (
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">
-                      Nombre
-                    </label>
-                    <input
-                      id="nombre"
-                      type="text"
-                      value={nombre}
-                      onChange={(e) => setNombre(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                      placeholder="Juan"
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="apellido" className="block text-sm font-medium text-gray-700 mb-2">
-                      Apellido
-                    </label>
-                    <input
-                      id="apellido"
-                      type="text"
-                      value={apellido}
-                      onChange={(e) => setApellido(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                      placeholder="Perez"
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="register-email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Correo Electronico
-                  </label>
-                  <input
-                    id="register-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                    placeholder="correo@ejemplo.com"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-2">
-                    Telefono
-                  </label>
-                  <input
-                    id="telefono"
-                    type="tel"
-                    value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                    placeholder="+54 11 1234-5678"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="rol" className="block text-sm font-medium text-gray-700 mb-2">
-                    Rol
-                  </label>
-                  <select
-                    id="rol"
-                    value={rol}
-                    onChange={(e) => setRol(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all bg-white"
-                    disabled={loading}
-                  >
-                    <option value="enfermero">Enfermero/a</option>
-                    <option value="medico">Medico/a</option>
-                    <option value="administrativo">Administrativo/a</option>
-                    <option value="director">Director/a</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="register-password" className="block text-sm font-medium text-gray-700 mb-2">
-                    Contrasena
-                  </label>
-                  <input
-                    id="register-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                    placeholder="Minimo 6 caracteres"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirmar Contrasena
-                  </label>
-                  <input
-                    id="confirm-password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                    placeholder="Repite la contrasena"
-                    disabled={loading}
-                  />
-                </div>
-
-                {error && (
-                  <div className="bg-red-50 border-l-4 border-red-500 text-red-800 px-4 py-3 rounded text-sm">
-                    {error}
-                  </div>
-                )}
-
-                {success && (
-                  <div className="bg-green-50 border-l-4 border-green-500 text-green-800 px-4 py-3 rounded text-sm">
-                    {success}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-primary-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-                >
-                  {loading ? 'Registrando...' : 'Crear Cuenta'}
-                </button>
-
-                <div className="text-center pt-2">
-                  <button
-                    type="button"
-                    onClick={() => goToMode('login')}
-                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-                  >
-                    Ya tienes cuenta? Inicia sesion aqui
-                  </button>
+                  <p className="text-sm text-gray-600">
+                    Alta de usuarios solo por administrador.
+                  </p>
                 </div>
               </form>
             )}

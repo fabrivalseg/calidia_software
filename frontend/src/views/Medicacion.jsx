@@ -10,6 +10,7 @@ const Medicacion = () => {
   const [residenteSeleccionado, setResidenteSeleccionado] = useState(null);
   const [medicaciones, setMedicaciones] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [eliminandoId, setEliminandoId] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [medicacionEditando, setMedicacionEditando] = useState(null);
   
@@ -158,6 +159,41 @@ const Medicacion = () => {
     });
     setFormErrors({});
     setMostrarFormulario(true);
+  };
+
+  const handleDelete = async (medicacion) => {
+    const result = await Swal.fire({
+      title: '¿Eliminar medicacion?',
+      html: `<p>Se eliminara definitivamente:</p><strong>${medicacion.nombre}</strong><p>${medicacion.momento} - ${medicacion.hora}</p>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Si, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    setEliminandoId(medicacion.id);
+    try {
+      await medicacionService.remove(medicacion.id);
+      toast.success('Medicación eliminada exitosamente');
+
+      if (medicacionEditando?.id === medicacion.id) {
+        handleCancelForm();
+      }
+
+      await loadMedicacion();
+    } catch (error) {
+      if (!isUnauthorized(error)) {
+        toast.error(getErrorMessage(error, 'No se pudo eliminar la medicacion'));
+      }
+    } finally {
+      setEliminandoId(null);
+    }
   };
 
   const handleOpenAddForm = () => {
@@ -457,15 +493,27 @@ const Medicacion = () => {
                               </div>
                             </div>
                             
-                            <button
-                              onClick={() => handleEdit(medicacion)}
-                              className="ml-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium flex items-center gap-2"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                              Editar
-                            </button>
+                            <div className="ml-4 flex items-center gap-2">
+                              <button
+                                onClick={() => handleEdit(medicacion)}
+                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium flex items-center gap-2"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Editar
+                              </button>
+                              <button
+                                onClick={() => handleDelete(medicacion)}
+                                disabled={eliminandoId === medicacion.id}
+                                className="px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8" />
+                                </svg>
+                                {eliminandoId === medicacion.id ? 'Eliminando...' : 'Eliminar'}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}

@@ -27,6 +27,13 @@ export const medicacionService = {
     });
   },
 
+  // Eliminar medicación
+  remove: async (id) => {
+    return await apiRequest(`/medicaciones/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
 
 
 };

@@ -30,17 +30,17 @@ public class UsuarioControlador {
                 .toList();
     }
 
+    @PostMapping
+    public ResponseEntity<Void> crear(@Valid @RequestBody CrearUsuarioDTO dto) {
+        usuarioServicio.crearUsuario(dto);
+        return ResponseEntity.status(201).build();
+    }
+
     @GetMapping("/{email}")
     public UsuarioResponseDTO buscar(@PathVariable String email) {
         return UsuarioMapper.toDTO(
                 usuarioServicio.buscarPorEmail(email)
         );
-    }
-
-    @DeleteMapping("/{email}")
-    public ResponseEntity<Void> eliminar(@PathVariable String email) {
-        usuarioServicio.eliminarUsuario(email);
-        return ResponseEntity.noContent().build();
     }
 
 }
